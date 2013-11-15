@@ -1,0 +1,11 @@
+{
+    "name": "CPU Watchdog",
+    "version": "0.1",
+    "description": "Adds a background CPU monitor",
+    "permissions": ["processes", "notifications", "storage"],
+    "background": {
+        "scripts": ["monitor.js"],
+        "persistent": false
+    },
+    "manifest_version": 2
+}
