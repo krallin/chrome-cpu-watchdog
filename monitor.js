@@ -1,5 +1,5 @@
 var DEBUG = 1,
-    THRESHOLD = 1,    // More isn't acceptable for extended periods
+    THRESHOLD = 90,    // More isn't acceptable for extended periods
     TOLERANCE = 10,     // Number of updates we allow a process to be running above threshold (TODO: Dumb, use time.)
     WATCHED_PROCESSES_KEY = "cpu-watchdog.watchedProcesses";
 
@@ -35,8 +35,23 @@ function handleProcesses (processes) {
             }
             proc = processes[key];
             if (proc.cpu > THRESHOLD) {
-                newWatchedProcesses[proc.id] = (oldWatchedProcesses[proc.id] || 0) + 1;
+                var excess = (oldWatchedProcesses[proc.id] || 0) + 1;
 
+                if (excess > TOLERANCE) {
+                    console.log("PID %s is in excess", proc.id);
+
+                    var opt = {
+                         type: "basic",
+                         title: "Excess CPU usage!",
+                         message: "A process is in excess CPU usage: " + proc.id,
+                         iconUrl: "icon.png"
+                    }
+
+                    // TODO -> Make this a list.
+                    chrome.notifications.create("", opt, function (notificationId) {});
+                } else {
+                    newWatchedProcesses[proc.id] = excess;
+                }
             }
             if (DEBUG) {
                 console.log("PID %s: %s", proc.id, proc.cpu);
@@ -56,16 +71,10 @@ function handleProcesses (processes) {
                 console.log("Status was committed");
             }
         });
+
+
     });
 
-    // var opt = {
-    //     type: "basic",
-    //     title: "Hello!",
-    //     message: "Stuff",
-    //     iconUrl: "icon.png"
-    // }
-
-    // chrome.notifications.create("cpu-watchdog", opt, function (notificationId) {});
 }
 
 
